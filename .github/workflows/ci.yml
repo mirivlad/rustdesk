@@ -149,11 +149,20 @@ jobs:
       with:
         vcpkgDirectory: /opt/artifacts/vcpkg
         vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
-
-    - name: Install vcpkg dependencies
+    - name: Update vcpkg baseline
       run: |
-        $VCPKG_ROOT/vcpkg install --x-install-root="$VCPKG_ROOT/installed"
-      shell: bash
+        cd $VCPKG_ROOT
+        git fetch --all
+        git checkout master
+        ./bootstrap-vcpkg.sh || bootstrap-vcpkg.bat
+
+    - name: Update baseline in manifest
+      run: |
+        $VCPKG_ROOT/vcpkg x-update-baseline --add-initial-baseline
+        - name: Install vcpkg dependencies
+          run: |
+            $VCPKG_ROOT/vcpkg install --x-install-root="$VCPKG_ROOT/installed"
+          shell: bash
 
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@v1
